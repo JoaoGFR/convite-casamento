@@ -1,16 +1,23 @@
-const Redis = require('ioredis');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
-// Use the URL provided by the user, or fallback to environment variables
-const REDIS_URL = process.env.convites_REDIS_URL || process.env.REDIS_URL || "redis://default:2IQCWMcbasrkTP0jK0JpfWjIQj3OdMXk@jam-famous-birds-37964.db.redis.io:15473";
-
-// Create a single redis instance outside the handler to reuse the connection in serverless environment
-const redis = new Redis(REDIS_URL);
+let redisInstance = null;
 
 module.exports = async function handler(req, res) {
   const { method } = req;
 
   try {
+    if (!redisInstance) {
+      const Redis = require('ioredis');
+      const REDIS_URL = process.env.convites_REDIS_URL || process.env.REDIS_URL || "redis://default:2IQCWMcbasrkTP0jK0JpfWjIQj3OdMXk@jam-famous-birds-37964.db.redis.io:15473";
+      redisInstance = new Redis(REDIS_URL);
+      
+      // Catch connection errors so they don't crash the process
+      redisInstance.on('error', (err) => {
+        console.error('Redis connection error:', err);
+      });
+    }
+    
+    const redis = redisInstance;
     if (method === 'GET') {
       const { id } = req.query;
       
@@ -57,7 +64,7 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Dados inválidos' });
       }
 
-      const id = uuidv4();
+      const id = crypto.randomUUID();
       
       const formattedGuests = guests.map((name, index) => ({
         id: index.toString(),
