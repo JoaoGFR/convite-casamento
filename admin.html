@@ -51,8 +51,13 @@
         <!-- Lista de Convites -->
         <div class="lg:col-span-2">
             <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-semibold">Convites Gerados</h2>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <h2 class="text-lg font-semibold">Convites Gerados</h2>
+                        <div id="guest-counters" class="text-sm bg-[#fdfbf7] border border-[#dcb873]/30 px-3 py-1 rounded-full text-[#8a7653] font-medium hidden">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
                     <button onclick="loadInvites()" class="text-sm text-gray-500 hover:text-[#dcb873]">
                         <i class="fa-solid fa-rotate-right mr-1"></i> Atualizar
                     </button>
@@ -98,8 +103,16 @@
                 // Sort by creation date (newest first)
                 invites.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+                let totalGuests = 0;
+                let confirmedGuests = 0;
                 let html = '';
+
                 invites.forEach(invite => {
+                    invite.guests.forEach(g => {
+                        totalGuests++;
+                        if (g.status === 'confirmed') confirmedGuests++;
+                    });
+                    
                     html += `
                         <tr class="border-b border-gray-100 hover:bg-gray-50">
                             <td class="py-4">
@@ -131,6 +144,10 @@
                 });
                 
                 listEl.innerHTML = html;
+                
+                const countersEl = document.getElementById('guest-counters');
+                countersEl.innerHTML = `<span class="text-gray-500">Convidados:</span> ${totalGuests} <span class="mx-2 opacity-30">|</span> <span class="text-green-600"><i class="fa-solid fa-check text-xs"></i> Confirmados:</span> ${confirmedGuests}`;
+                countersEl.classList.remove('hidden');
             } catch (error) {
                 console.error(error);
                 listEl.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-red-500">Erro ao carregar convites.</td></tr>';
