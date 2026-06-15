@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-PT" class="bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Convites - Vitória & João</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="text-neutral-800">
+
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="font-semibold text-lg text-gray-800">Painel de Convites</div>
+            <a href="/" class="text-sm text-gray-500 hover:text-gray-900 transition"><i class="fa-solid fa-arrow-left mr-2"></i>Voltar ao Site</a>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Formulário de Criação -->
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <h2 class="text-lg font-semibold mb-4">Novo Convite</h2>
+                
+                <form id="invite-form" onsubmit="createInvite(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Família / Grupo</label>
+                        <input type="text" id="family-name" required placeholder="Ex: Família Silva" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dcb873]">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Convidados (Um por linha)</label>
+                        <textarea id="guest-names" rows="4" required placeholder="João Silva&#10;Maria Silva&#10;Pedro Silva" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#dcb873]"></textarea>
+                    </div>
+
+                    <button type="submit" id="btn-submit"
+                        class="w-full bg-[#dcb873] hover:bg-[#b59345] text-white font-medium py-2 px-4 rounded-md transition-colors">
+                        Gerar Convite
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de Convites -->
+        <div class="lg:col-span-2">
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold">Convites Gerados</h2>
+                    <button onclick="loadInvites()" class="text-sm text-gray-500 hover:text-[#dcb873]">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Atualizar
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200 text-sm text-gray-500">
+                                <th class="pb-3 font-medium">Família / Convidados</th>
+                                <th class="pb-3 font-medium">Status</th>
+                                <th class="pb-3 font-medium text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invites-list">
+                            <tr>
+                                <td colspan="3" class="py-8 text-center text-gray-400">
+                                    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Carregando convites...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadInvites);
+
+        async function loadInvites() {
+            const listEl = document.getElementById('invites-list');
+            try {
+                const response = await fetch('/api/invites');
+                const invites = await response.json();
+                
+                if (invites.length === 0) {
+                    listEl.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-gray-400">Nenhum convite gerado ainda.</td></tr>';
+                    return;
+                }
+
+                // Sort by creation date (newest first)
+                invites.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                let html = '';
+                invites.forEach(invite => {
+                    html += `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-4">
+                                <div class="font-medium text-gray-900">${invite.familyName}</div>
+                                <div class="text-sm text-gray-500 mt-1">
+                                    ${invite.guests.map(g => g.name).join(', ')}
+                                </div>
+                            </td>
+                            <td class="py-4">
+                                <div class="flex flex-col gap-1 text-sm">
+                                    ${invite.guests.map(g => {
+                                        let badge = '<span class="text-gray-400"><i class="fa-regular fa-clock"></i> Pendente</span>';
+                                        if (g.status === 'confirmed') badge = '<span class="text-green-600"><i class="fa-solid fa-check"></i> Confirmado</span>';
+                                        if (g.status === 'declined') badge = '<span class="text-red-500"><i class="fa-solid fa-xmark"></i> Não irá</span>';
+                                        return `<div>${badge} <span class="text-gray-500 text-xs ml-1">${g.name}</span></div>`;
+                                    }).join('')}
+                                </div>
+                            </td>
+                            <td class="py-4 text-right">
+                                <button onclick="copyLink('${invite.id}')" class="text-[#dcb873] hover:text-[#b59345] bg-[#fdfbf7] border border-[#dcb873]/30 px-3 py-1.5 rounded text-xs font-medium transition mr-2">
+                                    <i class="fa-solid fa-link"></i> Copiar Link
+                                </button>
+                                <button onclick="deleteInvite('${invite.id}')" class="text-red-400 hover:text-red-600 text-sm transition" title="Excluir">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                listEl.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                listEl.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-red-500">Erro ao carregar convites.</td></tr>';
+            }
+        }
+
+        async function createInvite(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            const familyName = document.getElementById('family-name').value;
+            const guestNamesStr = document.getElementById('guest-names').value;
+            
+            // Parse guests list (split by newlines, trim, remove empty)
+            const guests = guestNamesStr.split('\n')
+                                        .map(name => name.trim())
+                                        .filter(name => name.length > 0);
+                                        
+            if (guests.length === 0) {
+                alert('Adicione pelo menos um convidado.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+
+            try {
+                const response = await fetch('/api/invites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ familyName, guests })
+                });
+
+                if (response.ok) {
+                    const newInvite = await response.json();
+                    document.getElementById('invite-form').reset();
+                    await loadInvites();
+                    copyLink(newInvite.id);
+                    alert('Convite gerado e link copiado para área de transferência!');
+                } else {
+                    alert('Erro ao gerar convite.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erro na conexão.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Gerar Convite';
+            }
+        }
+
+        function copyLink(inviteId) {
+            const link = `${window.location.origin}/?invite_id=${inviteId}#detalhes`;
+            navigator.clipboard.writeText(link).then(() => {
+                // Notificação visual rápida pode ser implementada aqui
+            }).catch(err => {
+                console.error('Erro ao copiar', err);
+            });
+        }
+
+        async function deleteInvite(inviteId) {
+            if (!confirm('Tem certeza que deseja excluir este convite?')) return;
+            
+            try {
+                const response = await fetch(`/api/invites?id=${inviteId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadInvites();
+                } else {
+                    alert('Erro ao excluir.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erro na conexão.');
+            }
+        }
+    </script>
+</body>
+</html>

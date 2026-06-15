@@ -400,7 +400,7 @@
 
                 <p class="font-serif text-[#8a7653] mb-6 px-4">
                     Linha Km 11, Zona Rural<br>
-                    A cerimônia e a recepção acontecerão no mesmo local. Aguardamos você às 16h30.
+                    A cerimônia e a recepção acontecerão no mesmo local. Aguardamos você às 16h00.
                 </p>
 
                 <!-- Mapa Falso Embutido (Substituir por API real se necessário) -->
@@ -418,22 +418,25 @@
             </div>
 
             <!-- Confirmação de Presença -->
-            <div
+            <!-- Confirmação de Presença -->
+            <div id="rsvp-container"
                 class="flex flex-col items-center justify-center text-center p-10 bg-[#fdfbf7] border border-[#dcb873]/20 rounded-tr-[80px] rounded-bl-[80px] shadow-sm hover:shadow-md transition duration-500">
                 <div class="w-16 h-16 bg-[#e8f7ed] rounded-full flex items-center justify-center mb-6 text-[#25D366]">
                     <i class="fa-brands fa-whatsapp text-3xl"></i>
                 </div>
                 <h3 class="font-serif text-3xl text-[#b59345] mb-4">Confirme sua Presença</h3>
-                <p class="font-serif text-lg text-[#8a7653] mb-8 px-4 max-w-sm">
+                <p id="rsvp-subtitle" class="font-serif text-lg text-[#8a7653] mb-8 px-4 max-w-sm">
                     Para que possamos preparar tudo com muito amor, pedimos que confirme sua presença até o dia <span
                         class="font-bold">12 de Agosto de 2026</span>.
                 </p>
 
-                <a href="https://wa.me/5569992064507?text=Ol%C3%A1!%20Gostaria%20de%20confirmar%20minha%20presen%C3%A7a%20no%20casamento%20de%20Vit%C3%B3ria%20e%20Jo%C3%A3o."
-                    target="_blank"
-                    class="whatsapp-btn flex items-center gap-3 px-8 py-4 rounded-full font-sans tracking-wide uppercase text-sm font-semibold shadow-lg hover:-translate-y-1">
-                    <i class="fa-brands fa-whatsapp text-2xl"></i> Enviar Mensagem no WhatsApp
-                </a>
+                <div id="rsvp-action-area" class="w-full max-w-sm">
+                    <a href="https://wa.me/5569992064507?text=Ol%C3%A1!%20Gostaria%20de%20confirmar%20minha%20presen%C3%A7a%20no%20casamento%20de%20Vit%C3%B3ria%20e%20Jo%C3%A3o."
+                        target="_blank"
+                        class="whatsapp-btn flex items-center justify-center gap-3 px-8 py-4 rounded-full font-sans tracking-wide uppercase text-sm font-semibold shadow-lg hover:-translate-y-1 w-full">
+                        <i class="fa-brands fa-whatsapp text-2xl"></i> Enviar Mensagem no WhatsApp
+                    </a>
+                </div>
 
                 <p class="text-xs text-[#8a7653] mt-8 opacity-70">A confirmação é essencial para a nossa organização.
                 </p>
@@ -834,6 +837,83 @@
                 console.error('Erro ao copiar: ', err);
                 alert('Não foi possível copiar a chave automaticamente.');
             });
+        }
+
+        // Lógica de Confirmação de Presença
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const inviteId = urlParams.get('invite_id');
+
+            if (inviteId) {
+                const actionArea = document.getElementById('rsvp-action-area');
+                const subtitle = document.getElementById('rsvp-subtitle');
+                
+                actionArea.innerHTML = '<div class="text-[#8a7653] text-sm"><i class="fa-solid fa-spinner fa-spin"></i> Carregando seu convite...</div>';
+
+                try {
+                    const response = await fetch(`/api/invites?id=${inviteId}`);
+                    if (!response.ok) throw new Error('Convite não encontrado');
+                    
+                    const invite = await response.json();
+                    
+                    subtitle.innerHTML = `Olá, <strong>Família ${invite.familyName}</strong>!<br>Por favor, confirme a presença de cada convidado abaixo:`;
+                    
+                    renderGuests(invite.guests, inviteId);
+                } catch (error) {
+                    console.error(error);
+                    actionArea.innerHTML = '<div class="text-red-500 text-sm">Convite não encontrado ou erro ao carregar.</div>';
+                }
+            }
+        });
+
+        function renderGuests(guests, inviteId) {
+            const actionArea = document.getElementById('rsvp-action-area');
+            let html = '<div class="flex flex-col gap-3 w-full text-left mt-4">';
+            
+            guests.forEach(guest => {
+                const isConfirmed = guest.status === 'confirmed';
+                const isDeclined = guest.status === 'declined';
+                
+                html += `
+                    <div class="flex items-center justify-between p-4 bg-white border border-[#dcb873]/30 rounded-lg shadow-sm">
+                        <span class="font-serif text-[#8a7653] font-medium">${guest.name}</span>
+                        <div class="flex gap-2">
+                            <button onclick="updateStatus('${inviteId}', '${guest.id}', 'confirmed')" 
+                                class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${isConfirmed ? 'bg-[#25D366] text-white shadow-md' : 'bg-neutral-100 text-neutral-400 hover:bg-[#e8f7ed] hover:text-[#25D366]'}">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button onclick="updateStatus('${inviteId}', '${guest.id}', 'declined')" 
+                                class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${isDeclined ? 'bg-red-500 text-white shadow-md' : 'bg-neutral-100 text-neutral-400 hover:bg-red-50 hover:text-red-500'}">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            actionArea.innerHTML = html;
+        }
+
+        async function updateStatus(inviteId, guestId, status) {
+            try {
+                // Optimistic UI update could be added here
+                const response = await fetch('/api/invites', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: inviteId, guestId, status })
+                });
+
+                if (response.ok) {
+                    const updatedInvite = await response.json();
+                    renderGuests(updatedInvite.guests, inviteId);
+                } else {
+                    alert('Erro ao atualizar presença. Tente novamente.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erro na conexão. Tente novamente.');
+            }
         }
     </script>
 </body>
