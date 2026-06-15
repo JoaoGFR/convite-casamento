@@ -170,11 +170,12 @@
                     copyLink(newInvite.id);
                     alert('Convite gerado e link copiado para área de transferência!');
                 } else {
-                    alert('Erro ao gerar convite.');
+                    const errorData = await response.json();
+                    alert('Erro ao gerar convite: ' + (errorData.error || 'Desconhecido'));
                 }
             } catch (error) {
                 console.error(error);
-                alert('Erro na conexão.');
+                alert('Erro na conexão. Verifique se a Vercel está respondendo corretamente.');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'Gerar Convite';

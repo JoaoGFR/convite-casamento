@@ -1,17 +1,23 @@
-import { Redis } from '@upstash/redis'
-import { v4 as uuidv4 } from 'uuid'
+const { Redis } = require('@upstash/redis');
+const { v4: uuidv4 } = require('uuid');
 
-// Initialize Redis from Environment Variables (KV_REST_API_URL and KV_REST_API_TOKEN)
-// These are automatically provided by Vercel when connecting an Upstash Redis or Vercel KV database.
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
-})
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { method } = req;
 
   try {
+    // Inicializamos aqui dentro para garantir que as variáveis de ambiente foram carregadas
+    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    if (!url || !token) {
+      console.error('As variáveis de ambiente do banco de dados não estão definidas.');
+      return res.status(500).json({ 
+        error: 'Erro de configuração do banco de dados. Certifique-se de que o KV está linkado e o projeto foi redeployed.' 
+      });
+    }
+
+    const redis = new Redis({ url, token });
+
     if (method === 'GET') {
       const { id } = req.query;
       
@@ -24,21 +30,18 @@ export default async function handler(req, res) {
         return res.status(200).json(invite);
       } else {
         // Get all invites (Admin)
-        // First get the list of all invite IDs
         const inviteIds = await redis.smembers('invites_list');
         
         if (!inviteIds || inviteIds.length === 0) {
           return res.status(200).json([]);
         }
         
-        // Fetch all invites
         const pipeline = redis.pipeline();
         inviteIds.forEach(id => {
           pipeline.get(`invite:${id}`);
         });
         const invites = await pipeline.exec();
         
-        // Filter out nulls in case of inconsistencies
         return res.status(200).json(invites.filter(Boolean));
       }
     } 
@@ -53,7 +56,6 @@ export default async function handler(req, res) {
 
       const id = uuidv4();
       
-      // Format guests
       const formattedGuests = guests.map((name, index) => ({
         id: index.toString(),
         name: name,
@@ -67,9 +69,7 @@ export default async function handler(req, res) {
         createdAt: new Date().toISOString()
       };
 
-      // Save invite
       await redis.set(`invite:${id}`, newInvite);
-      // Add to index list
       await redis.sadd('invites_list', id);
 
       return res.status(201).json(newInvite);
@@ -88,7 +88,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Convite não encontrado' });
       }
 
-      // Update the specific guest's status
       let updated = false;
       invite.guests = invite.guests.map(guest => {
         if (guest.id === guestId) {
@@ -102,7 +101,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Convidado não encontrado' });
       }
 
-      // Save updated invite
       await redis.set(`invite:${id}`, invite);
 
       return res.status(200).json(invite);
@@ -121,10 +119,10 @@ export default async function handler(req, res) {
 
     else {
       res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+      return res.status(405).json({ error: `Method ${method} Not Allowed` });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro no servidor' });
+    console.error('API Error:', error);
+    return res.status(500).json({ error: 'Erro interno no servidor', details: error.message });
   }
 }
