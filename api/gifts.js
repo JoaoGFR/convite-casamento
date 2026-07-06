@@ -30,6 +30,8 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Liquidificador', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Sanduicheira ou grill', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Cafeteira', claimed: false },
+  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Mixer', claimed: false },
+  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Faqueiro', claimed: false },
 
   // Quarto
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Travesseiros', claimed: false },
@@ -41,6 +43,7 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Protetor de travesseiro', claimed: false },
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Organizadores', claimed: false },
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Mantas', claimed: false },
+  { id: crypto.randomUUID(), category: 'Quarto', name: 'Sapateira', claimed: false },
 
   // Sala
   { id: crypto.randomUUID(), category: 'Sala', name: 'Rack para televisão', claimed: false },
@@ -63,6 +66,7 @@ const defaultGifts = [
   // Mesa e Servir
   { id: crypto.randomUUID(), category: 'Mesa e Servir', name: 'Jogo americano', claimed: false },
   { id: crypto.randomUUID(), category: 'Mesa e Servir', name: 'Toalha de mesa', claimed: false },
+  { id: crypto.randomUUID(), category: 'Mesa e Servir', name: 'Suqueira', claimed: false },
 
   // Lavanderia & Extras
   { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'Aspirador de pó', claimed: false },
@@ -71,7 +75,9 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'Organizadores multiuso', claimed: false },
   { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'Varal', claimed: false },
   { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'Caixa organizadora', claimed: false },
-  { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'Relógio de parede', claimed: false }
+  { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'Relógio de parede', claimed: false },
+  { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'robô aspirador', claimed: false },
+  { id: crypto.randomUUID(), category: 'Lavanderia & Extras', name: 'MOP de limpeza', claimed: false }
 ];
 
 module.exports = async function handler(req, res) {

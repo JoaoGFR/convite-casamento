@@ -15,8 +15,8 @@ const itemsCozinha = [
 
 const itemsQuarto = [
     'Travesseiros',
-    'Cobre leito King',
-    'Jogo de lençol queen'
+    'Cobre leito Queen',
+    'Jogo de cama queen'
 ];
 
 const itemsSala = [

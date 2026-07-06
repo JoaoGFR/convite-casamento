@@ -170,6 +170,7 @@
                 <a href="#convite" class="hover:text-[#b59345] transition">O Convite</a>
                 <a href="#detalhes" class="hover:text-[#b59345] transition">Programação</a>
                 <a href="#presentes" class="hover:text-[#b59345] transition">Lista de Presentes</a>
+                <a href="#rsvp-container" class="hover:text-[#b59345] transition">Confirmar Presença</a>
             </div>
             <div class="hidden sm:flex gap-2">
                 <a href="#detalhes"
@@ -179,6 +180,10 @@
                 <a href="#presentes"
                     class="bg-[#dcb873] hover:bg-[#b59345] text-white px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider shadow-md flex items-center gap-1.5 transition duration-300">
                     <i class="fa-solid fa-gift"></i> Presentes
+                </a>
+                <a href="#rsvp-container"
+                    class="bg-[#dcb873] hover:bg-[#b59345] text-white px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider shadow-md flex items-center gap-1.5 transition duration-300">
+                    <i class="fa-solid fa-check"></i> Confirmar Presença
                 </a>
             </div>
         </div>
@@ -437,11 +442,10 @@
                 </p>
 
                 <div id="rsvp-action-area" class="w-full max-w-sm">
-                    <a href="https://wa.me/5569992064507?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20meu%20link%20exclusivo%20para%20confirmar%20presen%C3%A7a%20no%20casamento."
-                        target="_blank"
-                        class="whatsapp-btn flex items-center justify-center gap-3 px-6 py-4 rounded-full font-sans tracking-wide uppercase text-[11px] sm:text-xs font-bold shadow-lg hover:-translate-y-1 w-full">
-                        <i class="fa-brands fa-whatsapp text-2xl"></i> Solicitar Link de Confirmação
-                    </a>
+                    <button onclick="openRsvpModal()"
+                        class="w-full bg-[#dcb873] hover:bg-[#b59345] text-white py-4 rounded-full font-sans uppercase text-xs font-bold tracking-widest shadow-md hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check-to-slot"></i> Confirmar Presença
+                    </button>
                 </div>
 
                 <p class="text-xs text-[#8a7653] mt-8 opacity-70">A confirmação é essencial para a nossa organização.
@@ -597,6 +601,14 @@
 
     <!-- SCRIPT -->
     <script>
+        function openRsvpModal() {
+            document.getElementById('rsvp-modal').classList.remove('hidden');
+        }
+
+        function closeRsvpModal() {
+            document.getElementById('rsvp-modal').classList.add('hidden');
+        }
+
         function copiarPix() {
             const chave = document.getElementById('pix-chave').innerText;
             navigator.clipboard.writeText(chave).then(() => {
@@ -684,6 +696,52 @@
             }
         }
     </script>
+
+    <!-- Modal Instruções RSVP -->
+    <div id="rsvp-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl transform transition-all p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-serif text-2xl text-[#b59345]">Confirmar Presença</h3>
+                <button onclick="closeRsvpModal()" class="text-neutral-400 hover:text-red-500 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-left mb-8">
+                <p class="text-[#8a7653] text-sm leading-relaxed">
+                    A confirmação de presença é individual ou por grupo familiar e é feita através de um <strong class="text-[#b59345]">link exclusivo</strong> enviado pelos noivos.
+                </p>
+                <div class="bg-[#fdfbf7] border border-[#dcb873]/30 rounded-xl p-4 space-y-3 text-xs text-[#8a7653]">
+                    <div class="flex gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-[#dcb873]/20 flex items-center justify-center text-[#b59345] font-bold shrink-0">1</span>
+                        <span>Procure em suas mensagens do WhatsApp o link enviado pelos noivos.</span>
+                    </div>
+                    <div class="flex gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-[#dcb873]/20 flex items-center justify-center text-[#b59345] font-bold shrink-0">2</span>
+                        <span>Acesse o link para ver os nomes do seu grupo.</span>
+                    </div>
+                    <div class="flex gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-[#dcb873]/20 flex items-center justify-center text-[#b59345] font-bold shrink-0">3</span>
+                        <span>Selecione quem irá comparecer e confirme diretamente pelo site.</span>
+                    </div>
+                </div>
+                <p class="text-[#8a7653] text-sm leading-relaxed">
+                    Se você não encontrou, perdeu ou ainda não recebeu seu link exclusivo, clique no botão abaixo para solicitá-lo aos noivos via WhatsApp.
+                </p>
+            </div>
+
+            <div class="space-y-3">
+                <a href="https://wa.me/5569992064507?text=Ol%C3%A1!%20Gostaria%20de%20solicitar%20meu%20link%20exclusivo%20para%20confirmar%20presen%C3%A7a%20no%20casamento."
+                    target="_blank"
+                    class="whatsapp-btn flex items-center justify-center gap-3 px-6 py-4 rounded-full font-sans tracking-wide uppercase text-xs font-bold shadow-lg hover:-translate-y-0.5 w-full">
+                    <i class="fa-brands fa-whatsapp text-2xl"></i> Solicitar Link via WhatsApp
+                </a>
+                <button onclick="closeRsvpModal()" class="w-full border border-neutral-200 text-neutral-500 hover:bg-neutral-50 py-3 rounded-full text-xs uppercase font-bold tracking-wider transition">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Presente -->
     <div id="gift-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
