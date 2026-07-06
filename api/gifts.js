@@ -35,7 +35,7 @@ const defaultGifts = [
 
   // Quarto
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Travesseiros', claimed: false },
-  { id: crypto.randomUUID(), category: 'Quarto', name: 'Cobre leito King', claimed: false },
+  { id: crypto.randomUUID(), category: 'Quarto', name: 'Cobre leito Quenn', claimed: false },
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Jogo de lençol queen', claimed: false },
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Jogo de cama', claimed: false },
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Edredom ou colcha', claimed: false },
@@ -88,29 +88,29 @@ module.exports = async function handler(req, res) {
       const Redis = require('ioredis');
       const REDIS_URL = process.env.convites_REDIS_URL || process.env.REDIS_URL || "redis://default:2IQCWMcbasrkTP0jK0JpfWjIQj3OdMXk@jam-famous-birds-37964.db.redis.io:15473";
       redisInstance = new Redis(REDIS_URL);
-      
+
       redisInstance.on('error', (err) => {
         console.error('Redis connection error:', err);
       });
     }
-    
+
     const redis = redisInstance;
 
     if (method === 'GET') {
       let giftsStr = await redis.get('gifts_catalog');
-      
+
       if (!giftsStr) {
         // Seed initial catalog
         await redis.set('gifts_catalog', JSON.stringify(defaultGifts));
         return res.status(200).json(defaultGifts);
       }
-      
+
       return res.status(200).json(JSON.parse(giftsStr));
     }
 
     if (method === 'POST') {
       const { action, id, guestName, guestPhone } = req.body;
-      
+
       let giftsStr = await redis.get('gifts_catalog');
       let gifts = giftsStr ? JSON.parse(giftsStr) : defaultGifts;
 
@@ -123,22 +123,22 @@ module.exports = async function handler(req, res) {
         if (gifts[giftIndex].claimed) {
           return res.status(400).json({ error: 'Presente já foi escolhido por outra pessoa.' });
         }
-        
+
         gifts[giftIndex].claimed = true;
         gifts[giftIndex].claimedBy = guestName;
         gifts[giftIndex].phone = guestPhone;
         gifts[giftIndex].claimedAt = new Date().toISOString();
-        
+
         await redis.set('gifts_catalog', JSON.stringify(gifts));
         return res.status(200).json(gifts);
-      } 
-      
+      }
+
       if (action === 'unclaim') {
         gifts[giftIndex].claimed = false;
         delete gifts[giftIndex].claimedBy;
         delete gifts[giftIndex].phone;
         delete gifts[giftIndex].claimedAt;
-        
+
         await redis.set('gifts_catalog', JSON.stringify(gifts));
         return res.status(200).json(gifts);
       }
