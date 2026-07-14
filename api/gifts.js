@@ -32,6 +32,7 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Cafeteira', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Mixer', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Faqueiro', claimed: false },
+  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Geladeira', claimed: false },
 
   // Quarto
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Travesseiros', claimed: false },

@@ -10,7 +10,8 @@ const itemsCozinha = [
     'Assadeiras',
     'Garrafa térmica',
     'Tábua de carne',
-    'Kit sobremesa'
+    'Kit sobremesa',
+    'Geladeira'
 ];
 
 const itemsQuarto = [

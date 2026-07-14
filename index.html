@@ -160,6 +160,7 @@
 </head>
 
 <body class="text-neutral-800 antialiased selection:bg-[#dcb873] selection:text-white">
+    <div id="main-content">
 
     <!-- BARRA NAVEGAÇÃO -->
     <nav
@@ -603,6 +604,41 @@
             <p class="text-[10px] text-neutral-500 uppercase tracking-widest">Com amor, para sempre.</p>
         </div>
     </footer>
+    </div>
+
+    <!-- Tela Exclusiva de Confirmação de Presença -->
+    <div id="rsvp-exclusive-screen" class="hidden min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#fdfbf7] to-[#f5efe6] py-12 px-4 relative">
+        <!-- SVG Decorativo Fundo -->
+        <div class="absolute top-0 left-0 p-6 opacity-10 pointer-events-none">
+            <i class="fa-solid fa-leaf text-7xl text-[#dcb873]"></i>
+        </div>
+        <div class="absolute bottom-0 right-0 p-6 opacity-10 pointer-events-none">
+            <i class="fa-solid fa-leaf text-7xl text-[#dcb873] rotate-180"></i>
+        </div>
+
+        <div class="w-full max-w-md bg-white rounded-3xl border border-[#dcb873]/30 p-8 shadow-xl text-center relative z-10">
+            <div class="w-16 h-16 bg-[#fdfbf7] border border-[#dcb873]/30 rounded-full flex items-center justify-center mb-6 mx-auto text-[#b59345]">
+                <i class="fa-solid fa-calendar-check text-2xl"></i>
+            </div>
+            
+            <h2 class="font-script text-5xl text-[#b59345] mb-2">Confirmação de Presença</h2>
+            <div class="section-divider mx-auto text-[#dcb873] mb-6"><i class="fa-solid fa-heart"></i></div>
+            
+            <p id="rsvp-exclusive-subtitle" class="font-serif text-[#8a7653] mb-6 leading-relaxed">
+                Carregando dados do seu convite...
+            </p>
+
+            <div id="rsvp-exclusive-action-area" class="w-full">
+                <!-- Preenchido via Javascript -->
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-[#dcb873]/10">
+                <a href="/" class="text-xs font-semibold uppercase tracking-wider text-[#b59345] hover:text-[#8a7653] transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Ver o Convite de Casamento Completo
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- SCRIPT -->
     <script>
@@ -630,8 +666,15 @@
             const inviteId = urlParams.get('invite_id');
 
             if (inviteId) {
-                const actionArea = document.getElementById('rsvp-action-area');
-                const subtitle = document.getElementById('rsvp-subtitle');
+                // Oculta a página principal e exibe a tela exclusiva
+                const mainContent = document.getElementById('main-content');
+                if (mainContent) mainContent.classList.add('hidden');
+                
+                const exclusiveScreen = document.getElementById('rsvp-exclusive-screen');
+                if (exclusiveScreen) exclusiveScreen.classList.remove('hidden');
+
+                const actionArea = document.getElementById('rsvp-exclusive-action-area');
+                const subtitle = document.getElementById('rsvp-exclusive-subtitle');
 
                 actionArea.innerHTML = '<div class="text-[#8a7653] text-sm"><i class="fa-solid fa-spinner fa-spin"></i> Carregando seu convite...</div>';
 
@@ -641,18 +684,21 @@
 
                     const invite = await response.json();
 
-                    subtitle.innerHTML = `Olá, <strong> ${invite.familyName}</strong>!<br>Por favor, confirme a presença de cada convidado abaixo:`;
+                    subtitle.innerHTML = `Olá, <strong>${invite.familyName}</strong>!<br>Por favor, confirme a presença de cada convidado abaixo:`;
 
-                    renderGuests(invite.guests, inviteId);
+                    renderGuests(invite.guests, inviteId, 'rsvp-exclusive-action-area');
                 } catch (error) {
                     console.error(error);
+                    subtitle.innerHTML = 'Houve um erro.';
                     actionArea.innerHTML = '<div class="text-red-500 text-sm">Convite não encontrado ou erro ao carregar.</div>';
                 }
             }
         });
 
-        function renderGuests(guests, inviteId) {
-            const actionArea = document.getElementById('rsvp-action-area');
+        function renderGuests(guests, inviteId, targetId = 'rsvp-action-area') {
+            const actionArea = document.getElementById(targetId);
+            if (!actionArea) return;
+            
             let html = '<div class="flex flex-col gap-3 w-full text-left mt-4">';
 
             guests.forEach(guest => {
@@ -681,6 +727,9 @@
         }
 
         async function updateStatus(inviteId, guestId, status) {
+            const isExclusive = !document.getElementById('rsvp-exclusive-screen').classList.contains('hidden');
+            const targetId = isExclusive ? 'rsvp-exclusive-action-area' : 'rsvp-action-area';
+
             try {
                 // Optimistic UI update could be added here
                 const response = await fetch('/api/invites', {
@@ -691,7 +740,7 @@
 
                 if (response.ok) {
                     const updatedInvite = await response.json();
-                    renderGuests(updatedInvite.guests, inviteId);
+                    renderGuests(updatedInvite.guests, inviteId, targetId);
                 } else {
                     alert('Erro ao atualizar presença. Tente novamente.');
                 }
