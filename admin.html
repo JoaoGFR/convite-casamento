@@ -120,6 +120,32 @@
     </main>
 
     <script>
+        function getAdminToken() {
+            let token = localStorage.getItem('admin_token');
+            while (!token) {
+                token = prompt('Por favor, insira a senha do administrador para acessar o painel:');
+                if (token === null) {
+                    alert('A senha é obrigatória para acessar as funções do painel.');
+                    continue;
+                }
+                token = token.trim();
+                if (token) {
+                    localStorage.setItem('admin_token', token);
+                }
+            }
+            return token;
+        }
+
+        function handleApiError(response) {
+            if (response.status === 401 || response.status === 403) {
+                alert('Senha do administrador incorreta ou não autorizada.');
+                localStorage.removeItem('admin_token');
+                window.location.reload();
+                return true;
+            }
+            return false;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadInvites();
             loadClaimedGifts();
@@ -128,9 +154,13 @@
         async function loadClaimedGifts() {
             const listEl = document.getElementById('gifts-list');
             try {
-                const response = await fetch('/api/gifts');
-                const gifts = await response.json();
+                const response = await fetch('/api/gifts', {
+                    headers: { 'x-admin-token': getAdminToken() }
+                });
                 
+                if (handleApiError(response)) return;
+                
+                const gifts = await response.json();
                 const claimedGifts = gifts.filter(g => g.claimed);
                 
                 if (claimedGifts.length === 0) {
@@ -169,9 +199,14 @@
             try {
                 const response = await fetch('/api/gifts', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-token': getAdminToken()
+                    },
                     body: JSON.stringify({ action: 'unclaim', id: giftId })
                 });
+
+                if (handleApiError(response)) return;
 
                 if (response.ok) {
                     loadClaimedGifts();
@@ -187,7 +222,12 @@
         async function loadInvites() {
             const listEl = document.getElementById('invites-list');
             try {
-                const response = await fetch('/api/invites');
+                const response = await fetch('/api/invites', {
+                    headers: { 'x-admin-token': getAdminToken() }
+                });
+                
+                if (handleApiError(response)) return;
+                
                 const invites = await response.json();
                 
                 if (invites.length === 0) {
@@ -271,9 +311,14 @@
             try {
                 const response = await fetch('/api/invites', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-token': getAdminToken()
+                    },
                     body: JSON.stringify({ familyName, guests })
                 });
+
+                if (handleApiError(response)) return;
 
                 if (response.ok) {
                     const newInvite = await response.json();
@@ -295,7 +340,7 @@
         }
 
         function copyLink(inviteId) {
-            const link = `${window.location.origin}/?invite_id=${inviteId}#detalhes`;
+            const link = `${window.location.origin}/?invite_id=${inviteId}`;
             navigator.clipboard.writeText(link).then(() => {
                 // Notificação visual rápida pode ser implementada aqui
             }).catch(err => {
@@ -307,7 +352,13 @@
             if (!confirm('Tem certeza que deseja excluir este convite?')) return;
             
             try {
-                const response = await fetch(`/api/invites?id=${inviteId}`, { method: 'DELETE' });
+                const response = await fetch(`/api/invites?id=${inviteId}`, { 
+                    method: 'DELETE',
+                    headers: { 'x-admin-token': getAdminToken() }
+                });
+                
+                if (handleApiError(response)) return;
+
                 if (response.ok) {
                     loadInvites();
                 } else {

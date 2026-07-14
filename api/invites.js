@@ -18,18 +18,27 @@ module.exports = async function handler(req, res) {
     }
     
     const redis = redisInstance;
+
+    const adminToken = process.env.ADMIN_TOKEN || 'casamento2026';
+    const requestToken = req.headers['x-admin-token'] || req.query?.admin_token;
+    const isRequestAdmin = requestToken === adminToken;
+
     if (method === 'GET') {
       const { id } = req.query;
       
       if (id) {
-        // Get specific invite
+        // Get specific invite (Public)
         const inviteStr = await redis.get(`invite:${id}`);
         if (!inviteStr) {
           return res.status(404).json({ error: 'Convite não encontrado' });
         }
         return res.status(200).json(JSON.parse(inviteStr));
       } else {
-        // Get all invites (Admin)
+        // Get all invites (Admin) - REQUIRE AUTH
+        if (!isRequestAdmin) {
+          return res.status(401).json({ error: 'Não autorizado' });
+        }
+
         const inviteIds = await redis.smembers('invites_list');
         
         if (!inviteIds || inviteIds.length === 0) {
@@ -57,6 +66,11 @@ module.exports = async function handler(req, res) {
     } 
     
     else if (method === 'POST') {
+      // REQUIRE AUTH
+      if (!isRequestAdmin) {
+        return res.status(401).json({ error: 'Não autorizado' });
+      }
+
       // Create new invite (Admin)
       const { familyName, guests } = req.body;
       
@@ -86,7 +100,7 @@ module.exports = async function handler(req, res) {
     }
     
     else if (method === 'PUT') {
-      // Update guest status (Guest)
+      // Update guest status (Guest) - Public
       const { id, guestId, status } = req.body;
       
       if (!id || guestId === undefined || !status) {
@@ -119,6 +133,11 @@ module.exports = async function handler(req, res) {
     } 
     
     else if (method === 'DELETE') {
+      // REQUIRE AUTH
+      if (!isRequestAdmin) {
+        return res.status(401).json({ error: 'Não autorizado' });
+      }
+
       // Delete an invite (Admin)
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'ID is required' });

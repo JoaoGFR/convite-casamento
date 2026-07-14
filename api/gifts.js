@@ -98,16 +98,30 @@ module.exports = async function handler(req, res) {
 
     const redis = redisInstance;
 
+    const adminToken = process.env.ADMIN_TOKEN || 'casamento2026';
+    const requestToken = req.headers['x-admin-token'] || req.query?.admin_token;
+    const isRequestAdmin = requestToken === adminToken;
+
     if (method === 'GET') {
       let giftsStr = await redis.get('gifts_catalog');
+      let gifts = giftsStr ? JSON.parse(giftsStr) : defaultGifts;
 
       if (!giftsStr) {
         // Seed initial catalog
         await redis.set('gifts_catalog', JSON.stringify(defaultGifts));
-        return res.status(200).json(defaultGifts);
       }
 
-      return res.status(200).json(JSON.parse(giftsStr));
+      // Se não for administrador, remove dados confidenciais (quem escolheu, telefone, data)
+      if (!isRequestAdmin) {
+        gifts = gifts.map(g => ({
+          id: g.id,
+          category: g.category,
+          name: g.name,
+          claimed: g.claimed
+        }));
+      }
+
+      return res.status(200).json(gifts);
     }
 
     if (method === 'POST') {
@@ -132,10 +146,26 @@ module.exports = async function handler(req, res) {
         gifts[giftIndex].claimedAt = new Date().toISOString();
 
         await redis.set('gifts_catalog', JSON.stringify(gifts));
-        return res.status(200).json(gifts);
+
+        // Retorna a lista sem dados confidenciais se não for admin
+        let returnedGifts = gifts;
+        if (!isRequestAdmin) {
+          returnedGifts = gifts.map(g => ({
+            id: g.id,
+            category: g.category,
+            name: g.name,
+            claimed: g.claimed
+          }));
+        }
+        return res.status(200).json(returnedGifts);
       }
 
       if (action === 'unclaim') {
+        // Exige autenticação de administrador para desmarcar
+        if (!isRequestAdmin) {
+          return res.status(401).json({ error: 'Não autorizado' });
+        }
+
         gifts[giftIndex].claimed = false;
         delete gifts[giftIndex].claimedBy;
         delete gifts[giftIndex].phone;
