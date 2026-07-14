@@ -5,6 +5,8 @@ let redisInstance = null;
 // The default gift catalog to seed the database if it's empty
 const defaultGifts = [
   // Cozinha
+  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Geladeira', claimed: false },
+  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Mesa de jantar', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Batedeira', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Chaleira elétrica', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Panela elétrica de arroz', claimed: false },
@@ -32,7 +34,6 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Cafeteira', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Mixer', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Faqueiro', claimed: false },
-  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Geladeira', claimed: false },
 
   // Quarto
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Travesseiros', claimed: false },

@@ -2,6 +2,8 @@ const fs = require('fs');
 let html = fs.readFileSync('index.html', 'utf8');
 
 const itemsCozinha = [
+    'Geladeira',
+    'Mesa de jantar',
     'Batedeira',
     'Chaleira elétrica',
     'Panela elétrica de arroz',
@@ -10,8 +12,7 @@ const itemsCozinha = [
     'Assadeiras',
     'Garrafa térmica',
     'Tábua de carne',
-    'Kit sobremesa',
-    'Geladeira'
+    'Kit sobremesa'
 ];
 
 const itemsQuarto = [
