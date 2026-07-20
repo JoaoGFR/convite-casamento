@@ -11,7 +11,6 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Chaleira elétrica', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Panela elétrica de arroz', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Multi processador', claimed: false },
-  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Balcão de cozinha', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Assadeiras', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Garrafa térmica', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Tábua de carne', claimed: false },
@@ -48,7 +47,6 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Quarto', name: 'Sapateira', claimed: false },
 
   // Sala
-  { id: crypto.randomUUID(), category: 'Sala', name: 'Rack para televisão', claimed: false },
   { id: crypto.randomUUID(), category: 'Sala', name: 'Tapete para sala', claimed: false },
   { id: crypto.randomUUID(), category: 'Sala', name: 'Ventilador', claimed: false },
   { id: crypto.randomUUID(), category: 'Sala', name: 'Almofadas', claimed: false },
