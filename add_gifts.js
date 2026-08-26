@@ -7,6 +7,7 @@ const itemsCozinha = [
     'Chaleira elétrica',
     'Panela elétrica de arroz',
     'Multi processador',
+    'Forno elétrico',
     'Balcão de cozinha',
     'Assadeiras',
     'Garrafa térmica',

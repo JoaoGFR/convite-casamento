@@ -27,6 +27,7 @@ const defaultGifts = [
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Porta-temperos', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Air fryer', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Micro-ondas', claimed: false },
+  { id: crypto.randomUUID(), category: 'Cozinha', name: 'Forno elétrico', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Liquidificador', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Sanduicheira ou grill', claimed: false },
   { id: crypto.randomUUID(), category: 'Cozinha', name: 'Cafeteira', claimed: false },
